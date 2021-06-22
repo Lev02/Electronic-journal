@@ -1,6 +1,6 @@
 # Electronic-journal
 
-Technologies used: C#, SQL
+Technologies used: C#, WPF, SQL
 Programs used: MS Visual Studio 2019, MS SQL Server 2019
 
 In order to work with electronic journal locally you have to
