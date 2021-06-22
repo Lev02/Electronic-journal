@@ -1,0 +1,49 @@
+﻿<Window x:Class="EJournal.TeacherJournalWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:EJournal"
+        mc:Ignorable="d"
+        Title="" 
+        Height="450" Width="800"
+        WindowStartupLocation="CenterScreen"
+        Icon="Resources/JournalIcon.png"
+        >
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+            <DataGrid Name ="JournalMarks" Width="750" 
+                  IsReadOnly="False"
+                  HorizontalAlignment="Center"
+                  VerticalAlignment="Top"
+                  VerticalScrollBarVisibility="Auto"            
+                  ItemsSource="{Binding}"    
+                  FrozenColumnCount="1"
+                  >
+             
+            </DataGrid>
+
+        <DataGrid Name ="JournalLateness" Width="750" 
+                  IsReadOnly="False"
+                  HorizontalAlignment="Center"
+                  VerticalAlignment="Top"
+                  VerticalScrollBarVisibility="Auto"            
+                  ItemsSource="{Binding}"    
+                  FrozenColumnCount="1"
+                  >
+
+        </DataGrid>
+
+        <Button x:Name="updateMarksButton" Content="Сохранить оценки" Click="saveMarksButton_Click" HorizontalAlignment="Center" VerticalAlignment="Bottom" Width="151" />
+        <Button x:Name="updateLatenessButton" Content="Сохранить опоздания" Click="saveLatenessButton_Click" HorizontalAlignment="Center" VerticalAlignment="Bottom" Width="151" Margin="321,0,321.6,24" />
+
+        <Button x:Name="backButton" Content="Вернуться" Margin="0,0,0,0" Click="backButton_Click" HorizontalAlignment="Left" VerticalAlignment="Bottom" Width="151" />
+        <Button x:Name="switchButton" Content="Перейти к опозданиям" Margin="0,0,0,0" Click="switchButton_Click" HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="151" />
+
+
+    </Grid>
+</Window>

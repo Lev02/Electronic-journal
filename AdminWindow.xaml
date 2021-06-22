@@ -1,0 +1,90 @@
+﻿<Window x:Class="EJournal.AdminWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:EJournal"
+        mc:Ignorable="d"
+        Title="Панель администратора" Height="480" Width="710"
+        WindowStartupLocation="CenterScreen"
+        Icon="Resources/JournalIcon.png"
+        >
+    <Grid>
+        <Button Content="Добавить учащегося" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="150" Click="addPupil"/>
+        <Button Content="Удалить учащегося" HorizontalAlignment="Left" Margin="180,10,0,0" VerticalAlignment="Top" Width="150" Click="deletePupil"/>
+        <Button Content="Добавить преподавателя" HorizontalAlignment="Left" Margin="370,10,0,0" VerticalAlignment="Top" Width="150" Click="addTeacher"/>
+        <Button Content="Удалить преподавателя" HorizontalAlignment="Left" Margin="540,10,0,0" VerticalAlignment="Top" Width="150" Click="deleteTeacher"/>
+
+        <TextBlock HorizontalAlignment="Left" Margin="74,51,0,0" TextWrapping="Wrap" Text="ФИО" VerticalAlignment="Top"/>
+        <TextBox x:Name="pupilFamilyAdd" HorizontalAlignment="Left" Height="23" Margin="10,70,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="150"/>
+
+        <TextBlock HorizontalAlignment="Left" Margin="46,104,0,0" TextWrapping="Wrap" Text="Дата рождения" VerticalAlignment="Top"/>
+        <TextBox x:Name="PupilBirthdayAdd" HorizontalAlignment="Left" Height="23" Margin="10,125,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="150" MaxLength="10"/>
+
+        <TextBlock HorizontalAlignment="Left" Margin="62,160,0,0" TextWrapping="Wrap" Text="Группа" VerticalAlignment="Top"/>
+        <ComboBox x:Name="pupilGroupAdd" HorizontalAlignment="Left" Margin="10,180,0,0" VerticalAlignment="Top" Width="150" IsEditable="False" />
+
+
+        <TextBlock HorizontalAlignment="Left" Margin="244,49,0,0" TextWrapping="Wrap" Text="ФИО" VerticalAlignment="Top"/>
+        <TextBox x:Name="pupilFamilyDelete" HorizontalAlignment="Left" Height="23" Margin="180,70,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="150"/>
+
+        <TextBlock HorizontalAlignment="Left" Margin="218,104,0,0" TextWrapping="Wrap" Text="Дата рождения" VerticalAlignment="Top"/>
+        <TextBox x:Name="pupilBirthdayDelete" HorizontalAlignment="Left" Height="23" Margin="180,125,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="150"/>
+
+        <TextBlock HorizontalAlignment="Left" Margin="232,160,0,0" TextWrapping="Wrap" Text="Группа" VerticalAlignment="Top"/>
+        <ComboBox x:Name="pupilGroupDelete" HorizontalAlignment="Left" Margin="180,180,0,0" VerticalAlignment="Top" Width="150" IsEditable="False" />
+
+
+        <TextBlock HorizontalAlignment="Left" Margin="422,50,0,0" TextWrapping="Wrap" Text="ФИО" VerticalAlignment="Top"/>
+        <TextBox x:Name="teacherFioAdd" HorizontalAlignment="Left" Height="23" Margin="370,70,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="150"/>
+        <TextBlock HorizontalAlignment="Left" Margin="408,104,0,0" TextWrapping="Wrap" Text="Пароль" VerticalAlignment="Top"/>
+        <TextBox x:Name="teacherPasswordAdd" HorizontalAlignment="Left" Height="23" Margin="370,125,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="150"/>
+
+
+        <TextBlock HorizontalAlignment="Left" Margin="590,51,0,0" TextWrapping="Wrap" Text="ФИО" VerticalAlignment="Top"/>
+        <ComboBox x:Name="teacherListToDelete" HorizontalAlignment="Left" Margin="538,71,0,0" VerticalAlignment="Top" Width="150" IsEditable="False" />
+
+
+        <Separator HorizontalAlignment="Left" Height="28" Margin="0,207,0,0" VerticalAlignment="Top" Width="698"/>
+
+
+        <Button Content="Добавить предмет в группу" HorizontalAlignment="Left" Margin="10,240,0,0" VerticalAlignment="Top" Width="160" Click="addSubjectTeacherToGroup"/>
+
+        <TextBlock HorizontalAlignment="Left" Margin="62,280,0,0" TextWrapping="Wrap" Text="Группа" VerticalAlignment="Top"/>
+        <TextBlock HorizontalAlignment="Left" Margin="46,334,0,0" TextWrapping="Wrap" Text="Преподаватель" VerticalAlignment="Top"/>
+        <ComboBox x:Name="teacherListToAddSubject" HorizontalAlignment="Left" Margin="10,355,0,0" VerticalAlignment="Top" Width="150" IsEditable="False" />
+
+        <ComboBox x:Name="groupsListToAddSubject" HorizontalAlignment="Left" Margin="10,301,0,0" VerticalAlignment="Top" Width="150" IsEditable="False" />
+        <TextBlock HorizontalAlignment="Left" Margin="62,390,0,0" TextWrapping="Wrap" Text="Предмет" VerticalAlignment="Top"/>
+        <ComboBox x:Name="subjectListToAddSubject" HorizontalAlignment="Left" Margin="10,411,0,0" VerticalAlignment="Top" Width="150" IsEditable="False" />
+
+
+        <Button Content="Добавить предмет" HorizontalAlignment="Left" Margin="180,240,0,0" VerticalAlignment="Top" Width="160" Click="addSubject"/>
+        <TextBlock HorizontalAlignment="Left" Margin="232,280,0,0" TextWrapping="Wrap" Text="Предмет" VerticalAlignment="Top"/>
+        <TextBox x:Name="subjectAdd" HorizontalAlignment="Left" Height="23" Margin="180,301,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="150"/>
+        <Separator HorizontalAlignment="Left" Height="28" Margin="0,207,0,0" VerticalAlignment="Top" Width="698"/>
+        <Button Content="Добавить предмет" HorizontalAlignment="Left" Margin="180,240,0,0" VerticalAlignment="Top" Width="160" Click="addSubject"/>
+        <TextBlock HorizontalAlignment="Left" Margin="232,280,0,0" TextWrapping="Wrap" Text="Предмет" VerticalAlignment="Top"/>
+
+
+        <Button Content="Удалить предмет" HorizontalAlignment="Left" Margin="180,349,0,0" VerticalAlignment="Top" Width="160" Click="addSubject"/>
+        <TextBlock HorizontalAlignment="Left" Margin="232,389,0,0" TextWrapping="Wrap" Text="Предмет" VerticalAlignment="Top"/>
+
+        <Button Content="Удалить предмет" HorizontalAlignment="Left" Margin="180,349,0,0" VerticalAlignment="Top" Width="160" Click="deleteSubject"/>
+        <TextBlock HorizontalAlignment="Left" Margin="232,389,0,0" TextWrapping="Wrap" Text="Предмет" VerticalAlignment="Top"/>
+
+
+        <Button Content="Добавить группу" HorizontalAlignment="Left" Margin="370,240,0,0" VerticalAlignment="Top" Width="160" Click="addGroup"/>
+        <TextBlock HorizontalAlignment="Left" Margin="422,280,0,0" TextWrapping="Wrap" Text="Группа" VerticalAlignment="Top"/>
+        <TextBox x:Name="groupAdd" HorizontalAlignment="Left" Height="23" Margin="370,301,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="150"/>
+        
+        <Button Content="Удалить группу" HorizontalAlignment="Left" Margin="370,349,0,0" VerticalAlignment="Top" Width="160" Click="deleteGroup"/>
+        <TextBlock HorizontalAlignment="Left" Margin="422,389,0,0" TextWrapping="Wrap" Text="Группа" VerticalAlignment="Top"/>
+        <ComboBox x:Name="subjectListToDelete" HorizontalAlignment="Left" Margin="180,411,0,0" VerticalAlignment="Top" Width="150" IsEditable="False" />
+        <ComboBox x:Name="groupListToDelte" HorizontalAlignment="Left" Margin="370,411,0,0" VerticalAlignment="Top" Width="150" IsEditable="False" />
+        
+        <Button Content="Обновить базу данных" HorizontalAlignment="Left" Margin="540,240,0,0" VerticalAlignment="Top" Width="141" Click="Update_DataBase" Height="128"/>
+        <Button x:Name="backButton" Content="Вернуться" Margin="543,0,0,17.4" Click="backButton_Click" HorizontalAlignment="Left" VerticalAlignment="Bottom" Width="151" Height="44" RenderTransformOrigin="0.494,0.38" />
+
+    </Grid>
+</Window>
