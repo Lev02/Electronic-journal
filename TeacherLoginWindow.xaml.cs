@@ -23,32 +23,18 @@ namespace EJournal
 
     public partial class TeacherLoginWindow : Window
     {
-        public TeacherLoginWindow(SqlConnection connection)
+        private List<string> _teachersList;
+
+        public TeacherLoginWindow()
         {
             InitializeComponent();
-            this.connection = connection;
             updateTeachers();     
         }
 
-        SqlConnection connection;
-
-        List<string> teachers;
-        List<string> passwords;
-
-        private void updateTeachers(bool use_internet = false)
+        private void updateTeachers()
         {
-            teachers = new List<string>();
-            if (use_internet && Functions.InternetIsAvailable())
-            {
-                teachers = Functions.GetTeachersFromInternet();  
-            }
-            else
-            {
-                teachers = Functions.GetTeachersFromSqlServer(passwords);        
-            }
-
-            foreach (string teacher in teachers)
-                TeacherList.Items.Add(teacher);
+            _teachersList = Functions.GetTeachersFromSqlServer();        
+            foreach (string teacher in _teachersList) TeacherList.Items.Add(teacher);
         }
 
         private void Back_Button(object sender, RoutedEventArgs e)
@@ -64,7 +50,7 @@ namespace EJournal
             string password = PasswordTextBox.Password;
             if (Functions.ValidateTeacher(fio,password))
             {
-                TeacherLoginSuccessWindow t = new TeacherLoginSuccessWindow(connection, fio);
+                TeacherLoginSuccessWindow t = new TeacherLoginSuccessWindow(fio);
                 t.Show();
                 Close();
             }    

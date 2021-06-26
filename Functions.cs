@@ -15,7 +15,7 @@ using System.Data;
 
 namespace EJournal
 {
-    public class Functions
+    public static class Functions
     {
         private static SqlConnection _connection;
 
@@ -39,11 +39,13 @@ namespace EJournal
 
         public static bool IsValidDate(string date)
         {
-            if (date.Length != 10)
-                return false;
+            if (date.Length != 10) return false;
+
             foreach (char s in date)
-                if (!Char.IsDigit(s) && (s != '.' && s != '-'))
-                    return false;
+            {
+                if (!Char.IsDigit(s) && (s != '.' && s != '-')) return false;
+            }     
+            
             return true;
         }
 
@@ -52,8 +54,7 @@ namespace EJournal
             try
             {
                 using (var client = new WebClient())
-                using (client.OpenRead("http://google.com/generate_204"))
-                    return true;
+                using (client.OpenRead("http://google.com/generate_204")) return true;
             }
             catch
             {
@@ -71,10 +72,8 @@ namespace EJournal
                 Stream receiveStream = response.GetResponseStream();
                 StreamReader readStream = null;
 
-                if (String.IsNullOrWhiteSpace(response.CharacterSet))
-                    readStream = new StreamReader(receiveStream);
-                else
-                    readStream = new StreamReader(receiveStream, Encoding.GetEncoding(response.CharacterSet));
+                if (String.IsNullOrWhiteSpace(response.CharacterSet)) readStream = new StreamReader(receiveStream);
+                else readStream = new StreamReader(receiveStream, Encoding.GetEncoding(response.CharacterSet));
 
                 string data = readStream.ReadToEnd();
 
@@ -85,7 +84,6 @@ namespace EJournal
             }
 
             return "";
-
         }
 
         public static List<string> GetGroupsFromInternet(bool get_urls = false)
@@ -95,8 +93,8 @@ namespace EJournal
 
             if (get_urls)
             {
-                string template = "group&amp;id=\\d+\">.+?(?=<)";
-                Regex regex = new Regex(template);
+                string regex_template = "group&amp;id=\\d+\">.+?(?=<)";
+                Regex regex = new Regex(regex_template);
                 MatchCollection matches = regex.Matches(html);
 
                 string val;
@@ -111,12 +109,8 @@ namespace EJournal
             {
                 for (int i = 0; i < html.Length - 5; i++)
                 {
-                    if (IsValidGroup(html.Substring(i, 5)))
-                    {
-                        groups.Add(html.Substring(i, 5));
-                    }
+                    if (IsValidGroup(html.Substring(i, 5))) groups.Add(html.Substring(i, 5));
                 }
-
                 WriteGroupsToSqlServer(groups);
             }          
 
@@ -128,156 +122,152 @@ namespace EJournal
             List<string> groups = new List<string>();
             string sqlExpression = null;
 
-            if (teacher != null)
-                sqlExpression = "SELECT DISTINCT Группа FROM ГруппыПредметы WHERE Учитель = '" + teacher + "'";
+            if (teacher != null) sqlExpression = "SELECT DISTINCT Группа FROM ГруппыПредметы WHERE Учитель = '" + teacher + "'";
             else sqlExpression = "SELECT * FROM Группы";
 
             var reader = ExecuteQuery(sqlExpression);
-            while (reader.Read())
-            {
-                groups.Add(reader.GetValue(0).ToString());
-            }
+            while (reader.Read()) groups.Add(reader.GetValue(0).ToString());
+
             reader.Close();
             
             return groups;
         }
 
-        //при вызове функции будут пересозданы таблицы Учащиеся и ПредметыГруппы
-
-      
-        public static void dropGroupsSubjects( )
+        public static void DropGroupsSubjects( )
         {
             try
             {
-                string dropGroupsSubjectsSqlExpression = "DROP TABLE ГруппыПредметы";
-                ExecuteQuery(dropGroupsSubjectsSqlExpression);
+                ExecuteNonQuery("DROP TABLE ГруппыПредметы");
             }
             catch { }        
         }
 
-        public static void dropGroupsTeachers( )
+        public static void DropGroupsTeachers( )
         {
             try
             {
-                string dropGroupsTeachersSqlExpression = "DROP TABLE ГруппыУчителя";
-                ExecuteQuery(dropGroupsTeachersSqlExpression);
+                ExecuteNonQuery("DROP TABLE ГруппыУчителя");
             }
             catch { }
         }
 
-        public static void dropPupilMarks( )
+        public static void DropPupilMarks( )
         {
             try
             {
-                string dropPupilsMarksSqlExpression = "DROP TABLE УчащиесяОценки";
-                ExecuteQuery(dropPupilsMarksSqlExpression);
+                ExecuteNonQuery("DROP TABLE УчащиесяОценки");
             }
             catch { }
         }
 
-        public static void dropPupilLateness( )
+        public static void DropPupilLateness( )
         {
             try
             {
-                string dropPupilsLatenessSqlExpression = "DROP TABLE УчащиесяОпозданияОтсутствия";
-                ExecuteQuery(dropPupilsLatenessSqlExpression);
+                ExecuteNonQuery("DROP TABLE УчащиесяОпозданияОтсутствия");
             }
             catch { }
         }
 
-        public static void dropPupils( )
+        public static void DropPupils( )
         {
             try
             {
-                string dropPupilsTableSqlExpression = "DROP TABLE Учащиеся";
-                ExecuteQuery(dropPupilsTableSqlExpression);
+                ExecuteNonQuery("DROP TABLE Учащиеся");
             }
             catch { }
         }
 
-        public static void createGroupsSubjects( )
+        public static void CreateGroupsSubjects( )
         {
             try
             {
-                string createGroupsSubjectsTableSqlExpression = "CREATE TABLE ГруппыПредметы (" +
-                " Группа nvarchar(5)," +
-                " FOREIGN KEY(Группа)" +
-                " ERENCES Группы(Номер)" +
-                " ON UPDATE CASCADE " +
-                "ON DELETE CASCADE," +
-                " Предмет nvarchar(50)," +
-                " FOREIGN KEY(Предмет)" +
-                " ERENCES Предметы(Название)" +
-                " ON UPDATE CASCADE" +
-                " ON DELETE CASCADE, " +
-                "Учитель nvarchar(50) NOT NULL," +
-                 ")";
-                ExecuteQuery(createGroupsSubjectsTableSqlExpression);
+                string sqlExpression = 
+                    $@"CREATE TABLE ГруппыПредметы (
+                        Группа nvarchar(5),
+                        FOREIGN KEY(Группа)
+                        REFERENCES Группы(Номер)
+                        ON UPDATE CASCADE
+                        ON DELETE CASCADE,
+                        Предмет nvarchar(50),
+                        FOREIGN KEY(Предмет)
+                        REFERENCES Предметы(Название)
+                        ON UPDATE CASCADE
+                        ON DELETE CASCADE,
+                        Учитель nvarchar(50) NOT NULL
+                    )";
+                ExecuteNonQuery(sqlExpression);
             }
             catch { }
         }
 
-        public static void createGroupsTeachers( )
+        public static void CreateGroupsTeachers( )
         {
             try
             {
-                string createGroupsTeachersTableSqlExpression = "CREATE TABLE ГруппыУчителя (" +
-               "Группа nvarchar(5)," +
-               "FOREIGN KEY(Группа) " +
-               "ERENCES Группы(Номер)" +
-               " ON UPDATE CASCADE " +
-               "ON DELETE CASCADE," +
-               " Учитель nvarchar(50) NOT NULL" +
-               ")";
-                ExecuteQuery(createGroupsTeachersTableSqlExpression);
+                string sqlExpression = 
+                    $@"
+                    CREATE TABLE ГруппыУчителя ( +
+                       Группа nvarchar(5),
+                       FOREIGN KEY(Группа)
+                       REFERENCES Группы(Номер)
+                       ON UPDATE CASCADE
+                       ON DELETE CASCADE,
+                       Учитель nvarchar(50) NOT NULL
+                    )";
+                ExecuteNonQuery(sqlExpression);
             }
             catch { }
         }
 
-        public static void createTeacher( )
+        public static void CreateTeacher( )
         {
             try
             {
-                string exp = "CREATE TABLE Преподаватели (  ID int PRIMARY KEY IDENTITY(1,1), ФИО nvarchar(50) NOT NULL, Пароль nvarchar(50) NOT NULL, ) ";
-                ExecuteQuery(exp);
+                string sqlExpression = 
+                    $@"
+                        CREATE TABLE Преподаватели (
+                            ID int PRIMARY KEY IDENTITY(1,1),
+                            ФИО nvarchar(50) NOT NULL,
+                            Пароль nvarchar(50) NOT NULL
+                    )";
+                ExecuteNonQuery(sqlExpression);
             }
             catch { }
         }
 
-        public static void dropTeacher( )
+        public static void DropTeacher( )
         {
             try
             {
-                string exp = "DROP TABLE Преподаватели";
-                ExecuteQuery(exp);
+                ExecuteNonQuery("DROP TABLE Преподаватели");
             }
             catch { }
         }
 
-        public static void createPupils( )
+        public static void CreatePupils( )
         {
             try
             {
-                string createPupilsTableSqlExpression = "CREATE TABLE Учащиеся (" +
-                " ID int PRIMARY KEY IDENTITY(1,1)," +
-                " Фамилия nvarchar(50) NOT NULL," +
-                " ФИО nvarchar(50)," +
-                " ДатаРождения date NOT NULL," +
-                " НомерГруппы nvarchar(5) NOT NULL," +
-                " FOREIGN KEY(НомерГруппы)" +
-                " ERENCES Группы(Номер)" +
-                " ON UPDATE CASCADE" +
-                " ON DELETE CASCADE," +
-                ")"
-                ;
-                ExecuteQuery(createPupilsTableSqlExpression);
+                string sqlExpression =
+                    $@"
+                        CREATE TABLE Учащиеся (
+                            ID int PRIMARY KEY IDENTITY(1,1),
+                            Фамилия nvarchar(50) NOT NULL,
+                            ФИО nvarchar(50),
+                            ДатаРождения date NOT NULL,
+                            НомерГруппы nvarchar(5) NOT NULL,
+                            FOREIGN KEY(НомерГруппы)
+                            REFERENCES Группы(Номер)
+                            ON UPDATE CASCADE
+                            ON DELETE CASCADE
+                    )";
+                ExecuteNonQuery(sqlExpression);
             }
             catch { }
         }
 
-       
-
-        public static void createPupilsMarks( )
+        public static void CreatePupilsMarks( )
         {
             try
             {
@@ -295,12 +285,12 @@ namespace EJournal
                 "ON UPDATE CASCADE ON DELETE CASCADE, " +
                 " Оценка int NOT NULL CHECK(Оценка > 0 AND Оценка< 11) " +
                 ")";
-                ExecuteQuery(createPupilsMarksSqlExpression);
+                ExecuteNonQuery(createPupilsMarksSqlExpression);
             }
             catch { }
         }
 
-        public static void createPupilsLateness( )
+        public static void CreatePupilsLateness( )
         {
             try
             {
@@ -319,7 +309,7 @@ namespace EJournal
                 "ON DELETE CASCADE, " +
                 " МинутОпоздания nvarchar(2) NOT NULL" +
                 " )";
-                ExecuteQuery(createPupilsLatenessSqlExpression);
+                ExecuteNonQuery(createPupilsLatenessSqlExpression);
             }
             catch { }
         }
@@ -329,35 +319,35 @@ namespace EJournal
             string clearGroupsSqlExpression = "TRUNCATE TABLE Группы";
             string insertGroupSqlExpression = "INSERT INTO Группы(Номер) VALUES ";
 
-            dropGroupsSubjects();
-            dropGroupsTeachers();
-            dropPupilMarks();
-            dropPupilLateness();
-            dropPupils();
+            DropGroupsSubjects();
+            DropGroupsTeachers();
+            DropPupilMarks();
+            DropPupilLateness();
+            DropPupils();
 
             ExecuteQuery(clearGroupsSqlExpression);
 
-            createGroupsSubjects();
-            createGroupsTeachers();
-            createPupils();
-            createPupilsMarks();
-            createPupilsLateness();
+            CreateGroupsSubjects();
+            CreateGroupsTeachers();
+            CreatePupils();
+            CreatePupilsMarks();
+            CreatePupilsLateness();
 
-            foreach (string group in groups) 
-                ExecuteQuery(insertGroupSqlExpression + "('" + group + "');");
+            foreach (string group in groups) ExecuteNonQuery(insertGroupSqlExpression + "('" + group + "');");
+
         }
 
         public static void WriteTeachersToSqlServer(List<string> teachers)
         {
-            dropTeacher();
-            createTeacher();
+            DropTeacher();
+            CreateTeacher();
 
             string insertTeacherSqlExpression = "INSERT INTO Преподаватели(ФИО, Пароль) VALUES ";
 
             foreach (string teacher in teachers)
             {
-                //пароль по умолчанию - MishaMazBelaz
-                ExecuteQuery(insertTeacherSqlExpression + "('" + teacher + "'," + "'MishaMazBelaz');");
+                //пароль по умолчанию - 1111
+                ExecuteNonQuery(insertTeacherSqlExpression + "('" + teacher + "'," + "'1111');");
             }       
         }
 
@@ -366,21 +356,14 @@ namespace EJournal
             List<string> subjects = new List<string>();
             string html = GetHtml("https://kbp.by/rasp/timetable/view_beta_kbp/?q=");
 
-            string template = "subject&amp;id=\\d+\">.+?(?=<)";
+            string regex_template = "subject&amp;id=\\d+\">.+?(?=<)";
 
-            Regex regex = new Regex(template);
+            Regex regex = new Regex(regex_template);
             MatchCollection matches = regex.Matches(html);
 
-            string val;
-            foreach (Match match in matches)
-            {
-                val = match.Value;
+            // записываем то, что начинается после символа >
+            foreach (Match match in matches) subjects.Add(match.Value.Substring(match.Value.IndexOf('>') + 1));
                 
-                // записываем то, что начинается после символа >
-                subjects.Add(val.Substring(val.IndexOf('>') + 1));
-                
-            }
-
             WriteSubjectsToSqlServer(subjects);
 
             return subjects;
@@ -393,28 +376,24 @@ namespace EJournal
             string insertTeacherSqlExpression = "INSERT INTO Предметы(Название) VALUES ";
 
             //очистка таблицы
-            dropGroupsSubjects();
-            dropPupilMarks();
-            dropPupilLateness();
+            DropGroupsSubjects();
+            DropPupilMarks();
+            DropPupilLateness();
 
             ExecuteQuery(clearSubjectsSqlExpression);
 
-            createGroupsSubjects();
-            createPupilsMarks();
-            createPupilsLateness();
+            CreateGroupsSubjects();
+            CreatePupilsMarks();
+            CreatePupilsLateness();
 
-            foreach (string subject in subjects)
-                //пароль по умолчанию - MishaMazBelaz
-                ExecuteQuery(insertTeacherSqlExpression + "('" + subject + "');");
+            foreach (string subject in subjects) ExecuteQuery(insertTeacherSqlExpression + "('" + subject + "');");
         }
 
         public static void MatchGroupsWithTeachers(List<string> groupUrls, List<string> groups, List<string> teachers)
         {
-            if (groupUrls.Count != groups.Count)
-                throw new Exception("Количество ссылок на группы должно быть равным количеству групп");
+            if (groupUrls.Count != groups.Count) throw new Exception("Количество ссылок на группы должно быть равным количеству групп");
 
-            string clearTableSqlExpression = "TRUNCATE TABLE ГруппыУчителя";
-            ExecuteQuery(clearTableSqlExpression);
+            ExecuteNonQuery("TRUNCATE TABLE ГруппыУчителя");
 
             for (int i = 0; i < groupUrls.Count; i++)
             {
@@ -434,17 +413,15 @@ namespace EJournal
         public static void WriteMatchingGroupAndTeacherToSqlServer(string group,  List<string> matchingTeachers)
         {
             string insertTeacherSqlExpression = "INSERT INTO ГруппыУчителя(Группа,Учитель) VALUES ";
-            foreach (string teacher in matchingTeachers)
-                ExecuteQuery(insertTeacherSqlExpression + "('" + group + "'" + ",'" + teacher + "');");
+            foreach (string teacher in matchingTeachers) ExecuteNonQuery(insertTeacherSqlExpression + "('" + group + "'" + ",'" + teacher + "');");
+
         }
 
         public static void MatchGroupsWithSubjects(List<string> groupUrls, List<string> groups, List<string> subjects)
         {
-            if (groupUrls.Count != groups.Count)
-                throw new Exception("Количество ссылок на группы должно быть равным количеству групп");
+            if (groupUrls.Count != groups.Count) throw new Exception("Количество ссылок на группы должно быть равным количеству групп");
 
-            string clearTableSqlExpression = "TRUNCATE TABLE ГруппыПредметы";
-            ExecuteQuery(clearTableSqlExpression);
+            ExecuteNonQuery("TRUNCATE TABLE ГруппыПредметы");
 
             for (int i = 0; i < groupUrls.Count; i++)
             {
@@ -458,15 +435,11 @@ namespace EJournal
                         part = part.Substring(part.IndexOf("<a h=\"?cat=teacher&amp;id="));
                         part = part.Substring(part.IndexOf(">"));
                         string teacher = "";
-                        for (int k = 1; part[k] != '<'; k++)
-                            teacher += part[k];
-
+                        for (int k = 1; part[k] != '<'; k++) teacher += part[k];
                         matchingSubjectsTeachers[subject] = teacher;
-                    }
-                        
+                    }                  
                 }
                 matchingSubjectsTeachers = matchingSubjectsTeachers.Distinct().ToDictionary(x=>x.Key,x=>x.Value);
-
                 WriteMatchingGroupAndSubjectToSqlServer(groups[i],  matchingSubjectsTeachers);
             }
         }
@@ -502,18 +475,16 @@ namespace EJournal
             return teachers;           
         }
 
-        public static List<string> GetTeachersFromSqlServer(List<string> passwords)
+        public static List<string> GetTeachersFromSqlServer()
         {
             List<string> teachers = new List<string>();
-            passwords = new List<string>();
 
-            string sqlExpression = "SELECT ФИО,Пароль FROM Преподаватели";
+            string sqlExpression = "SELECT ФИО FROM Преподаватели";
 
             var reader = ExecuteQuery(sqlExpression);
             while (reader.Read())
             {
                 teachers.Add(reader.GetValue(0).ToString());
-                passwords.Add(reader.GetValue(1).ToString());
             }
             reader.Close();
             
@@ -521,13 +492,13 @@ namespace EJournal
         }
 
        
-
         public static bool ValidateAdmin(string login, string password)
         {
-            string sqlExpression =
-                $@"SELECT * FROM Администраторы WHERE
+            string sqlExpression = $@"
+                SELECT * FROM Администраторы WHERE
                     Логин='{login}' AND 
-                    Пароль='{password}'"; 
+                    Пароль='{password}'
+            "; 
 
             var reader = ExecuteQuery(sqlExpression);
             bool valid = reader.Read();
@@ -537,11 +508,12 @@ namespace EJournal
 
         public static bool ValidatePupil(string secondName, string birthday, string group)
         {
-            string sqlExpression = "SELECT * FROM Учащиеся" +
-                " WHERE Фамилия='" + secondName
-                + "' AND ДатаРождения='" + birthday 
-                + "' AND НомерГруппы='" + group + "'";
-
+            string sqlExpression = $@"
+                SELECT * FROM Учащиеся
+                WHERE Фамилия='{secondName}'
+                AND ДатаРождения='{birthday}'
+                AND НомерГруппы='{group}'
+            ";
 
             var reader = ExecuteQuery(sqlExpression);
 
@@ -552,9 +524,11 @@ namespace EJournal
 
         public static bool ValidateTeacher(string fio, string password)
         {
-            string sqlExpression = "SELECT * FROM Преподаватели" +
-                " WHERE ФИО='" + fio
-                + "' AND Пароль='" + password + "'";
+            string sqlExpression = $@"
+                SELECT * FROM Преподаватели
+                WHERE ФИО='{fio}' 
+                AND Пароль='{password}'
+            ";
 
             var reader = ExecuteQuery(sqlExpression);
 
@@ -567,11 +541,12 @@ namespace EJournal
         {
             Dictionary<string, string> subjectsTeachers = new Dictionary<string, string>();
 
-            string sqlExpression = "SELECT Предмет,Учитель FROM ГруппыПредметы" +
-                " WHERE Группа='" + group + "'";
+            string sqlExpression = $@"
+                SELECT Предмет,Учитель FROM ГруппыПредметы
+                WHERE Группа='{group}'
+            ";
 
             var reader = ExecuteQuery(sqlExpression);
-
             while (reader.Read())
             {
                 subjectsTeachers[reader.GetValue(0).ToString()] = reader.GetValue(1).ToString();
@@ -602,10 +577,12 @@ namespace EJournal
             List<string> pupils = new List<string>();
             pupil_IDs = new List<string>();
 
-            string sqlExpression = "SELECT ID, Фамилия, ИмяОтчество FROM Учащиеся WHERE НомерГруппы='" + group + "'";
+            string sqlExpression = $@"
+                SELECT ID, Фамилия, ИмяОтчество FROM Учащиеся 
+                WHERE НомерГруппы='{group}'
+            ";
 
             var reader = ExecuteQuery(sqlExpression);
-
             while (reader.Read())
             {
                 pupil_IDs.Add(reader.GetValue(0).ToString());
@@ -617,13 +594,11 @@ namespace EJournal
             return pupils;
         }
 
-        public static void deleteOldGrades( DataTable dt, string group, string subject,  List<string> pupil_IDs)
+        public static void DeleteOldGrades( DataTable dt, string group, string subject,  List<string> pupil_IDs)
         {
             for (int i = 0; i < dt.Rows.Count; i++)
             {
-                if (dt.Rows[i][0].ToString() == "")
-                    continue;
-                string secondName = dt.Rows[i][0].ToString();
+                if (dt.Rows[i][0].ToString() == "") continue;
                 for (int j = 1; j < dt.Columns.Count; j++)
                 {
                     if (dt.Rows[i][j].ToString().Replace(" ", "") != "")
@@ -636,14 +611,13 @@ namespace EJournal
 
                         if (isNumeric)
                         {
-                            string sqlDeleteExpression =
-                            "DELETE FROM УчащиесяОценки WHERE " +
-                            "Дата ='" + date + "' AND " +
-                            "Предмет ='" + subject + "' AND " +
-                            "ID_учащегося ='" + pupil_ID + "' AND " +
-                            "Оценка ='" + mark + "'";
-                            ;
-
+                            string sqlDeleteExpression = $@"
+                                DELETE FROM УчащиесяОценки WHERE
+                                    Дата ='{date}' AND
+                                    Предмет ='{subject}' AND 
+                                    ID_учащегося ='{pupil_ID}' AND 
+                                    Оценка ='{mark}'
+                            ";
                             ExecuteNonQuery(sqlDeleteExpression);
                         }
                         else
@@ -654,13 +628,11 @@ namespace EJournal
                 }
             }
         }
-        public static void updateNewGrades(DataTable dt, string group, string subject, List<string> pupil_IDs)
+        public static void UpdateNewGrades(DataTable dt, string group, string subject, List<string> pupil_IDs)
         {
             for (int i = 0; i < dt.Rows.Count; i++)
             {
-                //if (dt.Rows[i][0].ToString() == "")
-                //    continue;
-                string secondName = dt.Rows[i][0].ToString();
+                if (dt.Rows[i][0].ToString() == "") continue;
                 for (int j = 1; j < dt.Columns.Count; j++)
                 {
                     if (dt.Rows[i][j].ToString().Replace(" ", "") != "")
@@ -673,9 +645,10 @@ namespace EJournal
 
                         if (isNumeric)
                         {
-                            string sqlInsertExpression = $"INSERT INTO УчащиесяОценки(ID_учащегося, Дата, Предмет, Оценка)" +
-                            $" VALUES('{pupil_ID}','{date}','{subject}', '{mark}')";
-
+                            string sqlInsertExpression = $@"
+                                INSERT INTO УчащиесяОценки(ID_учащегося, Дата, Предмет, Оценка)
+                                VALUES('{pupil_ID}','{date}','{subject}', '{mark}')
+                            ";
                             ExecuteNonQuery(sqlInsertExpression);
                         }
                         else
@@ -687,12 +660,12 @@ namespace EJournal
             }
         }
 
-        public static void deleteOldLateness(DataTable dt, string group, string subject, List<string> pupil_IDs)
+        public static void DeleteOldLateness(DataTable dt, string group, string subject, List<string> pupil_IDs)
         {
             for (int i = 0; i < dt.Rows.Count; i++)
             {
-                if (dt.Rows[i][0].ToString() == "")
-                    continue;
+                if (dt.Rows[i][0].ToString() == "") continue;
+
                 string secondName = dt.Rows[i][0].ToString();
                 for (int j = 1; j < dt.Columns.Count; j++)
                 {
@@ -715,13 +688,11 @@ namespace EJournal
                 }
             }       
         }
-        public static void updateNewLateness(DataTable dt, string group, string subject, List<string> pupil_IDs)
+        public static void UpdateNewLateness(DataTable dt, string group, string subject, List<string> pupil_IDs)
         {
             for (int i = 0; i < dt.Rows.Count; i++)
             {
-                if (dt.Rows[i][0].ToString() == "")
-                    continue;
-                string secondName = dt.Rows[i][dt.Columns[0]].ToString();
+                if (dt.Rows[i][0].ToString() == "") continue;
                 for (int j = 1; j < dt.Columns.Count; j++)
                 {
                     if (dt.Rows[i][j].ToString().Replace(" ", "") != "")
@@ -745,13 +716,13 @@ namespace EJournal
                                     continue;
                                 }
                             }
-                            if (!ok) continue;
-                            else if (Convert.ToInt32(mark) > 90 || Convert.ToInt32(mark) < 0)
-                                continue;
+                            if (!ok || (Convert.ToInt32(mark) > 90 || Convert.ToInt32(mark) < 0)) continue;
                         }
                         
-                        string sqlInsertExpression = $"INSERT INTO УчащиесяОпозданияОтсутствия(ID_учащегося, Дата, Предмет, МинутОпоздания)" +
-                            $" VALUES('{pupil_ID}','{date}','{subject}', '{mark}')";
+                        string sqlInsertExpression = $@"
+                            INSERT INTO УчащиесяОпозданияОтсутствия(ID_учащегося, Дата, Предмет, МинутОпоздания)
+                            VALUES('{pupil_ID}','{date}','{subject}', '{mark}')
+                        ";
 
                         ExecuteNonQuery(sqlInsertExpression);
                     }
@@ -762,8 +733,10 @@ namespace EJournal
 
         public static void GetPupilMarks(List<string> dates, List<string> marks, string pupil_ID, string subject)
         {
-            string sqlExpression = $"SELECT Дата, Оценка FROM УчащиесяОценки " +
-                $"WHERE ID_учащегося='{pupil_ID}' AND Предмет='{subject}'";
+            string sqlExpression = $@"
+                SELECT Дата, Оценка FROM УчащиесяОценки
+                WHERE ID_учащегося='{pupil_ID}' AND Предмет='{subject}'
+            ";
 
             var reader = ExecuteQuery(sqlExpression);
             while (reader.Read())
@@ -776,8 +749,10 @@ namespace EJournal
 
         public static void GetPupilLateness(List<string> dates, List<string> lateness, string pupil_ID, string subject)
         {
-            string sqlExpression = $"SELECT Дата, МинутОпоздания FROM УчащиесяОпозданияОтсутствия " +
-                $"WHERE ID_учащегося='{pupil_ID}' AND Предмет='{subject}'";
+            string sqlExpression = $@"
+                SELECT Дата, МинутОпоздания FROM УчащиесяОпозданияОтсутствия 
+                WHERE ID_учащегося='{pupil_ID}' AND Предмет='{subject}'
+            ";
 
             var reader = ExecuteQuery(sqlExpression);
             while (reader.Read())
@@ -794,13 +769,20 @@ namespace EJournal
             string sqlExpression;
             if (io == null)
             {
-                sqlExpression = "SELECT ID FROM Учащиеся WHERE" +
-                $" НомерГруппы='{group}' AND Фамилия='{secondName}' AND ДатаРождения='{birthday}'";
+                sqlExpression = $@"
+                    SELECT ID FROM Учащиеся WHERE
+                    НомерГруппы='{group}' AND Фамилия='{secondName}' AND ДатаРождения='{birthday}'
+                ";
             }
             else
             {
-                sqlExpression = "SELECT ID FROM Учащиеся WHERE" +
-                $" НомерГруппы='{group}' AND Фамилия='{secondName}' AND ДатаРождения='{birthday}' AND ИмяОтчество='{io}'";
+                sqlExpression = $@"
+                    SELECT ID FROM Учащиеся WHERE
+                        НомерГруппы='{group}' AND 
+                        Фамилия='{secondName}' AND 
+                        ДатаРождения='{birthday}' AND 
+                        ИмяОтчество='{io}'
+                ";
             }
 
             var reader = ExecuteQuery(sqlExpression);
@@ -834,16 +816,82 @@ namespace EJournal
             return reference;
         }
 
+        public static int AddTeacher(string fio, string password)
+        {
+            string sqlExpression = $@"INSERT INTO Преподаватели VALUES('{fio}','{password}')";
+            return ExecuteNonQuery(sqlExpression);
+        }
+
+        public static int AddPupil(string family, string birthday, string group, string name_patronymic)
+        {
+            string sqlExpression = $@"
+                INSERT INTO Учащиеся VALUES(
+                    '{family}','{birthday}','{group}','{name_patronymic}'
+                )";
+            return ExecuteNonQuery(sqlExpression);
+        }
+
+        public static int AddSubject(string subject)
+        {
+            string sqlExpression = $@"INSERT INTO Предметы VALUES('{subject}')";
+            return ExecuteNonQuery(sqlExpression);
+        }
+
+        public static int AddGroup(string group)
+        {
+            string sqlExpression = $@"INSERT INTO Группы VALUES('{group}')";
+            return ExecuteNonQuery(sqlExpression);
+        }
+
+        public static int DeleteTeacher(string fio)
+        {
+            string sqlExpression = $@"
+                DELETE FROM Преподаватели WHERE
+                    ФИО='{fio}'
+                ";
+            return ExecuteNonQuery(sqlExpression);
+        }
+
+        public static int DeleteSubject(string subject)
+        {
+            string sqlExpression = $@"DELETE FROM Предметы WHERE Название='{subject}'";
+            return ExecuteNonQuery(sqlExpression);
+        }
+
+        public static int DeleteGroup(string group)
+        {
+            string sqlExpression = $@"DELETE FROM Группы WHERE Номер='{group}'";
+            return ExecuteNonQuery(sqlExpression);
+        }
+
+        public static int DeletePupil(string family, string birthday, string group, string name_patronymic)
+        {
+            string sqlExpression = $@"
+                DELETE FROM Учащиеся WHERE
+                    Фамилия='{family}' AND 
+                    ДатаРождения='{birthday}' AND 
+                    НомерГруппы='{group}' AND 
+                    ИмяОтчество='{name_patronymic}'
+                ";
+            return ExecuteNonQuery(sqlExpression);
+        }
+
+        public static int AddSubjectTeacherToGroup(string subject, string teacher, string group)
+        {
+            string sqlExpression = $@"INSERT INTO ГруппыПредметы VALUES('{group}','{subject}','{teacher}')";
+            return ExecuteNonQuery(sqlExpression);
+        }
+
         public static SqlDataReader ExecuteQuery(string sqlExpression)
         {
             SqlCommand command = new SqlCommand(sqlExpression, Connection);
             var reader = command.ExecuteReader();
             return reader;
         }
-        public static void ExecuteNonQuery(string sqlExpression)
+        public static int ExecuteNonQuery(string sqlExpression)
         {
             SqlCommand command = new SqlCommand(sqlExpression, Connection);
-            command.ExecuteNonQuery();
+            return command.ExecuteNonQuery();
         }
     }
 }

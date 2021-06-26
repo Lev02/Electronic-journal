@@ -47,21 +47,21 @@ namespace EJournal
         SqlConnection connection;
         private void Pupil_Button(object sender, RoutedEventArgs e)
         {          
-            PupilLoginWindow pupilLoginWindow = new PupilLoginWindow(connection);
+            PupilLoginWindow pupilLoginWindow = new PupilLoginWindow();
             pupilLoginWindow.Show();
             Close();
         }
 
         private void Teacher_Button(object sender, RoutedEventArgs e)
         {         
-            TeacherLoginWindow teacherLoginWindow = new TeacherLoginWindow(connection);
+            TeacherLoginWindow teacherLoginWindow = new TeacherLoginWindow();
             teacherLoginWindow.Show();
             Close();
         }
 
         private void OpenAdminWindow(object sender, RoutedEventArgs e)
         {
-            AdminLoginWindow alw = new AdminLoginWindow(connection);
+            AdminLoginWindow alw = new AdminLoginWindow();
             alw.Show();
             Close();
         }

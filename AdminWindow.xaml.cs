@@ -20,10 +20,9 @@ namespace EJournal
     /// </summary>
     public partial class AdminWindow : Window
     {
-        public AdminWindow(SqlConnection connection)
+        public AdminWindow()
         {
             InitializeComponent();
-            this.connection = connection;
 
             fillGroupsList();
             fillTeachersList();
@@ -49,14 +48,13 @@ namespace EJournal
         private void fillTeachersList()
         {
             var passwords = new List<string>();
-            var teachers = Functions.GetTeachersFromSqlServer(passwords);
+            var teachers = Functions.GetTeachersFromSqlServer();
 
             foreach (string teacher in teachers)
             {
                 teacherListToDelete.Items.Add(teacher);
                 teacherListToAddSubject.Items.Add(teacher);
-            }
-                
+            }              
         }
 
         private void fillGroupsList()
@@ -73,12 +71,10 @@ namespace EJournal
                 
         }
 
-        SqlConnection connection;
-
         private void addPupil(object sender, RoutedEventArgs e)
         {
             string family = pupilFamilyAdd.Text.Split()[0];
-            string io = pupilFamilyAdd.Text.Split()[1] + " " + pupilFamilyAdd.Text.Split()[2];
+            string name_patronymic = pupilFamilyAdd.Text.Split()[1] + " " + pupilFamilyAdd.Text.Split()[2];
             string birthday = PupilBirthdayAdd.Text;
             string group = pupilGroupAdd.SelectedItem.ToString();
 
@@ -98,20 +94,15 @@ namespace EJournal
                 return;
             }
 
-            string sqlExpression = $@"INSERT INTO Учащиеся VALUES('{family}','{birthday}','{group}','{io}')";
-
-            SqlCommand command = new SqlCommand(sqlExpression, connection);
-            int result = command.ExecuteNonQuery();
-
-            if (result > 0)
-                MessageBox.Show("Учащийся был успешно добавлен");
+            int result = Functions.AddPupil(family,birthday,group,name_patronymic);
+            if (result > 0) MessageBox.Show("Учащийся был успешно добавлен");
             else MessageBox.Show("Не удалось добавить учащегося!");
         }
 
         private void deletePupil(object sender, RoutedEventArgs e)
         {
             string family = pupilFamilyAdd.Text.Split()[0];
-            string io = pupilFamilyAdd.Text.Split()[1] + " " + pupilFamilyAdd.Text.Split()[2];
+            string name_patronymic = pupilFamilyAdd.Text.Split()[1] + " " + pupilFamilyAdd.Text.Split()[2];
             string birthday = PupilBirthdayAdd.Text;
             string group = pupilGroupAdd.SelectedItem.ToString();
 
@@ -126,36 +117,20 @@ namespace EJournal
                 return;
             }
 
-            string sqlExpression = $@"DELETE FROM Учащиеся WHERE 
-                Фамилия='{family}' AND
-                ДатаРождения='{birthday}' AND
-                НомерГруппы='{group}' AND
-                ИмяОтчество='{io}'";
-
-            SqlCommand command = new SqlCommand(sqlExpression, connection);
-            int result = command.ExecuteNonQuery();
-
-            if (result > 0)
-                MessageBox.Show("Учащийся был успешно удален");
+            int result = Functions.DeletePupil(family,birthday,group,name_patronymic);
+            if (result > 0) MessageBox.Show("Учащийся был успешно удален");
             else MessageBox.Show("Такого учащегося нет!");  
-            
-
         }
 
         private void addTeacher(object sender, RoutedEventArgs e)
         {
-            string fio = teacherFioAdd.Text;
-            string password = teacherPasswordAdd.Text;
-            string sqlExpression = $@"INSERT INTO Преподаватели VALUES('{fio}','{password}')";
-
-            SqlCommand command = new SqlCommand(sqlExpression, connection);
-            int result = command.ExecuteNonQuery();
-
+            var result = Functions.AddTeacher(teacherFioAdd.Text, teacherPasswordAdd.Text);
+ 
             if (result > 0)
             {
                 MessageBox.Show("Преподаватель был успешно добавлен");
-                teacherListToDelete.Items.Add(fio);
-                teacherListToAddSubject.Items.Add(fio);
+                teacherListToDelete.Items.Add(teacherFioAdd.Text);
+                teacherListToAddSubject.Items.Add(teacherFioAdd.Text);
             }
             else MessageBox.Show("Не удалось добавить преподавателя!");
         }
@@ -163,11 +138,7 @@ namespace EJournal
         private void deleteTeacher(object sender, RoutedEventArgs e)
         {
             string fio = teacherListToDelete.Text;
-            string sqlExpression = $@"DELETE FROM Преподаватели WHERE 
-                ФИО='{fio}'";
-
-            SqlCommand command = new SqlCommand(sqlExpression, connection);
-            int result = command.ExecuteNonQuery();
+            int result = Functions.DeleteTeacher(fio);
 
             if (result > 0)
             {
@@ -180,17 +151,13 @@ namespace EJournal
 
         private void addSubjectTeacherToGroup(object sender, RoutedEventArgs e)
         {
-            string teacher = teacherListToAddSubject.SelectedItem.ToString();
             string subject = subjectListToAddSubject.SelectedItem.ToString();
+            string teacher = teacherListToAddSubject.SelectedItem.ToString();
             string group = groupsListToAddSubject.SelectedItem.ToString();
 
-            string sqlExpression = $@"INSERT INTO ГруппыПредметы VALUES('{group}','{subject}','{teacher}')";
+            int result = Functions.AddSubjectTeacherToGroup(subject,teacher,group);
 
-            SqlCommand command = new SqlCommand(sqlExpression, connection);
-            int result = command.ExecuteNonQuery();
-
-            if (result > 0)
-                MessageBox.Show($@"Предмет {subject} был успешно добавлен в группу {group}");
+            if (result > 0) MessageBox.Show($@"Предмет {subject} был успешно добавлен в группу {group}");
             else MessageBox.Show($@"Не удалось добавить предмет {subject} в группу {group}!");
         }
 
@@ -204,11 +171,7 @@ namespace EJournal
                 return;
             }
 
-            string sqlExpression = $@"INSERT INTO Предметы VALUES('{subject}')";
-
-            SqlCommand command = new SqlCommand(sqlExpression, connection);
-            int result = command.ExecuteNonQuery();
-
+            int result = Functions.AddSubject(subject);
             if (result > 0)
             {
                 subjectListToDelete.Items.Add(subject);
@@ -228,10 +191,7 @@ namespace EJournal
                 return;
             }
 
-            string sqlExpression = $@"DELETE FROM Предметы WHERE Название='{subject}'";
-
-            SqlCommand command = new SqlCommand(sqlExpression, connection);
-            int result = command.ExecuteNonQuery();
+            int result = Functions.DeleteSubject(subject);
 
             if (result > 0)
             {
@@ -252,11 +212,7 @@ namespace EJournal
                 return;
             }
 
-            string sqlExpression = $@"INSERT INTO Группы VALUES('{group}')";
-
-            SqlCommand command = new SqlCommand(sqlExpression, connection);
-            int result = command.ExecuteNonQuery();
-
+            int result = Functions.AddGroup(group);
             if (result > 0)
             {
                 MessageBox.Show($@"Группа {group} была успешно добавлена!");
@@ -279,10 +235,7 @@ namespace EJournal
                 return;
             }
 
-            string sqlExpression = $@"DELETE FROM Группы WHERE Номер='{group}'";
-
-            SqlCommand command = new SqlCommand(sqlExpression, connection);
-            int result = command.ExecuteNonQuery();
+            int result = Functions.DeleteGroup(group);
 
             if (result > 0)
             {
@@ -312,7 +265,7 @@ namespace EJournal
 
         private void backButton_Click(object sender, RoutedEventArgs e)
         {
-            AdminLoginWindow alw = new AdminLoginWindow(connection);
+            AdminLoginWindow alw = new AdminLoginWindow();
             alw.Show();
             Close();
         }

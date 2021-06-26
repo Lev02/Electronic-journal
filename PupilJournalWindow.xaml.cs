@@ -22,21 +22,21 @@ namespace EJournal
     /// </summary>
     public partial class PupilJournalWindow : Window
     {
-        public PupilJournalWindow(Dictionary<string,string> subjectsTeachers, string pupil, string pupil_ID, string group, ref SqlConnection connection)
+        private List<string> _subjects;
+        private string _pupil_ID;
+
+        public PupilJournalWindow(Dictionary<string,string> subjectsTeachers, string pupil, string pupil_ID, string group)
         {
             InitializeComponent();
 
-            this.connection = connection;
-
-            this.Title = "Журнал учащегося группы " + group + " " + pupil;
+            Title = "Журнал учащегося группы " + group + " " + pupil;
 
             PupilJournalWindow_SizeChanged();
 
-            this.SizeChanged += PupilJournalWindow_SizeChanged;
+            SizeChanged += PupilJournalWindow_SizeChanged;
 
             List<string> subjects = new List<string>();
-            foreach (var pair in subjectsTeachers)
-                subjects.Add(pair.Key);
+            foreach (var pair in subjectsTeachers) subjects.Add(pair.Key);
 
             fillMarksTable(subjects, pupil_ID);
             fillLatenessTable(subjects, pupil_ID);
@@ -57,16 +57,9 @@ namespace EJournal
                 JournalLateness.Columns[i].CanUserResize = false;
             }
 
-            this.subjects = subjects;
-            this.pupil_ID = pupil_ID;
+            _subjects = subjects;
+            _pupil_ID = pupil_ID;
         }
-
-        List<string> subjects;
-        string pupil_ID;
-
-        SqlConnection connection;
-
-        
 
         private void PupilJournalWindow_SizeChanged(object sender = null, SizeChangedEventArgs e = null)
         {
@@ -75,21 +68,21 @@ namespace EJournal
             double datagridWidth = 0.95;
             double datagridHeight = 0.75;
 
-            JournalMarks.Width = this.Width * datagridWidth;
-            JournalMarks.Height = this.Height * datagridHeight;
+            JournalMarks.Width = Width * datagridWidth;
+            JournalMarks.Height = Height * datagridHeight;
 
-            JournalLateness.Width = this.Width * datagridWidth;
-            JournalLateness.Height = this.Height * datagridHeight;
+            JournalLateness.Width = Width * datagridWidth;
+            JournalLateness.Height = Height * datagridHeight;
 
-            this.backButton.Height = this.Height * buttonHeight;
-            this.switchButton.Height = this.Height * buttonHeight;
+            backButton.Height = Height * buttonHeight;
+            switchButton.Height = Height * buttonHeight;
 
-            this.backButton.Width = this.Width * buttonWidth;
-            this.switchButton.Width = this.Width * buttonWidth;
+            backButton.Width = Width * buttonWidth;
+            switchButton.Width = Width * buttonWidth;
 
-            double button_margin = this.Width * (1.0 - datagridWidth) / 2.0;
-            this.backButton.Margin = new Thickness(button_margin, 0, 0, button_margin);
-            this.switchButton.Margin = new Thickness(0, 0, button_margin, button_margin);
+            double button_margin = Width * (1.0 - datagridWidth) / 2.0;
+            backButton.Margin = new Thickness(button_margin, 0, 0, button_margin);
+            switchButton.Margin = new Thickness(0, 0, button_margin, button_margin);
 
         }
 
@@ -115,11 +108,6 @@ namespace EJournal
              
                 start_of_semester = start_of_semester.AddDays(1);
             }
-
-
-            string connectionString = ConfigurationManager.ConnectionStrings["DefaultConnection"].ConnectionString;
-            SqlConnection connection = new SqlConnection(connectionString);
-            connection.Open();
 
             for (int i = 0; i < subjects.Count; i++)
             {
@@ -147,7 +135,6 @@ namespace EJournal
                 else dt.Rows[i]["Средний"] = "-";
 
             }
-        
             JournalMarks.DataContext = dt;
         }
 
@@ -172,11 +159,6 @@ namespace EJournal
 
                 start_of_semester = start_of_semester.AddDays(1);
             }
-
-
-            string connectionString = ConfigurationManager.ConnectionStrings["DefaultConnection"].ConnectionString;
-            SqlConnection connection = new SqlConnection(connectionString);
-            connection.Open();
 
             for (int i = 0; i < subjects.Count; i++)
             {
@@ -215,13 +197,12 @@ namespace EJournal
                 else dt.Rows[i]["Всего минут"] = "-";
 
             }
-
             JournalLateness.DataContext = dt;
         }
 
         private void backButton_Click(object sender, RoutedEventArgs e)
         {
-            PupilLoginWindow p = new PupilLoginWindow(connection);
+            PupilLoginWindow p = new PupilLoginWindow();
             p.Show();
             Close();
         }
@@ -234,7 +215,6 @@ namespace EJournal
                 JournalLateness.Visibility = Visibility.Visible;
 
                 switchButton.Content = "Перейти к оценкам";
-
             }
             else
             {

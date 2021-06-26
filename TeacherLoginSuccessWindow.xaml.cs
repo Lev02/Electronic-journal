@@ -20,22 +20,16 @@ namespace EJournal
     /// </summary>
     public partial class TeacherLoginSuccessWindow : Window
     {
-        public TeacherLoginSuccessWindow(SqlConnection connection, string teacher)
+        private string _teacher;
+
+        public TeacherLoginSuccessWindow(string teacher)
         {
             InitializeComponent();
 
-            this.connection = connection;
-            this.teacher = teacher;
-
+            _teacher = teacher;
             updateGroups(teacher);
-
             GroupList.SelectionChanged += GroupList_SelectionChanged;
         }
-
-        
-        SqlConnection connection;
-        string teacher;
-
         private void GroupList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             updateSubjects();
@@ -44,23 +38,19 @@ namespace EJournal
         private void updateGroups(string teacher, bool use_internet = false)
         {
             var groups = Functions.GetGroupsFromSqlServer(teacher);
-
-            foreach (string group in groups)
-                GroupList.Items.Add(group);
+            foreach (var group in groups) GroupList.Items.Add(group);
         }
 
         private void updateSubjects()
         {
             var subjects = Functions.GetGroupSubjectsTeachers(GroupList.SelectedItem.ToString());
-
             SubjectList.Items.Clear();
        
             foreach (var subjectTeacher in subjects)
             {
-                if (teacher == subjectTeacher.Value)
-                    SubjectList.Items.Add(subjectTeacher.Key);
+                if (_teacher == subjectTeacher.Value) SubjectList.Items.Add(subjectTeacher.Key);
             }
-                
+            
             SubjectList.SelectedItem = SubjectList.Items[0];
         }
 
@@ -79,14 +69,14 @@ namespace EJournal
             string group = GroupList.SelectedItem.ToString();
             string subject = SubjectList.SelectedItem.ToString();
 
-            TeacherJournalWindow t = new TeacherJournalWindow(group, subject, teacher, connection);
+            TeacherJournalWindow t = new TeacherJournalWindow(group, subject, _teacher);
             t.Show();
             Close();
         }
 
         private void Back_Button(object sender, RoutedEventArgs e)
         {
-            TeacherLoginWindow teacherLoginWindow = new TeacherLoginWindow(connection);
+            TeacherLoginWindow teacherLoginWindow = new TeacherLoginWindow();
             teacherLoginWindow.Show();
             Close();
         }

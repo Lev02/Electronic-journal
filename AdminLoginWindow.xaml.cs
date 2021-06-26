@@ -20,15 +20,10 @@ namespace EJournal
     /// </summary>
     public partial class AdminLoginWindow : Window
     {
-        public AdminLoginWindow(SqlConnection connection)
+        public AdminLoginWindow()
         {
             InitializeComponent();
-
-            this.connection = connection;
-
         }
-
-        SqlConnection connection;
 
         private void Back_Button(object sender, RoutedEventArgs e)
         {
@@ -43,7 +38,7 @@ namespace EJournal
             string password = PasswordTextBox.Password;
             if (Functions.ValidateAdmin(login, password))
             {
-                AdminWindow aw = new AdminWindow(connection);
+                AdminWindow aw = new AdminWindow();
                 aw.Show();
                 Close();
             }

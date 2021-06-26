@@ -26,11 +26,9 @@ namespace EJournal
  
     public partial class PupilLoginWindow : Window
     {
-        public PupilLoginWindow(SqlConnection connection)
+        public PupilLoginWindow()
         {
             InitializeComponent();
-
-            this.connection = connection;
 
             try
             {
@@ -42,11 +40,7 @@ namespace EJournal
             {
                 MessageBox.Show(ex.Message);
             }        
-
-
         }
-
-        SqlConnection connection;
 
         private void updateGroups()
         {
@@ -120,7 +114,7 @@ namespace EJournal
                         valid = false;
                     }           
                 }
-                catch (Exception ex)
+                catch
                 {
                     valid = false;
                 }
@@ -144,7 +138,7 @@ namespace EJournal
             if (Functions.ValidatePupil(secondName,birthday,group))
             {
                 string pupil_ID = Functions.GetPupilID(group, secondName, birthday, io);
-                PupilJournalWindow pupilJournalWindow = new PupilJournalWindow(Functions.GetGroupSubjectsTeachers(group),secondName, pupil_ID, group, ref connection);
+                PupilJournalWindow pupilJournalWindow = new PupilJournalWindow(Functions.GetGroupSubjectsTeachers(group),secondName, pupil_ID, group);
                 pupilJournalWindow.Show();
                 Close();
             }
